@@ -1,21 +1,21 @@
+
 package com.example.quiz_atron3000
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Button
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
+import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 import com.example.quiz_atron3000.ui.theme.QuizAtron3000Theme
+import com.example.quiz_atron3000.ui.theme.screens.HomeScreen
+import com.example.quiz_atron3000.ui.theme.screens.QuizScreen
+import com.example.quiz_atron3000.ui.theme.screens.ResultScreen
+import com.example.quiz_atron3000.viewmodel.QuizViewModel
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -23,31 +23,29 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             QuizAtron3000Theme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    TelaInicial()
+                val nav = rememberNavController()
+                val vm: QuizViewModel =
+                    viewModel()   // um único ViewModel compartilhado pelas 3 telas
+
+                NavHost(
+                    navController = nav,
+                    startDestination = "home",
+                    modifier = Modifier.systemBarsPadding()
+                ) {
+                    composable("home") {
+                        HomeScreen(vm) { vm.restart(); nav.navigate("quiz") }
+                    }
+                    composable("quiz") {
+                        QuizScreen(vm) { nav.navigate("result") { popUpTo("home") } }
+                    }
+                    composable("result") {
+                        ResultScreen(vm) {
+                            vm.restart()
+                            nav.navigate("quiz") { popUpTo("home") }
+                        }
+                    }
                 }
             }
-        }
-    }
-}
-
-@Composable
-fun TelaInicial(){
-    Column(
-        modifier = Modifier.fillMaxSize(),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
-        Text(
-            text = "QUIZ"
-        )
-
-        Button(
-            onClick = {}
-        ) {
-            Text(
-                text = "INICIAR"
-            )
         }
     }
 }
